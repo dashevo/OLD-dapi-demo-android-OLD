@@ -15,7 +15,7 @@ import org.dashevo.schema.util.HashUtils
 import org.jsonorg.JSONObject
 import java.util.*
 
-object DapiDemoClient : DapiClient("192.168.0.5", "8080") {
+object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
 
     const val CONTACT = "contact"
     private const val DAPI_DEMO_DAP_ID = "8a0e3721aef3b07607642099de6d55894fe49e3b6c48ddb26a7cbc6c2ca947ac"
