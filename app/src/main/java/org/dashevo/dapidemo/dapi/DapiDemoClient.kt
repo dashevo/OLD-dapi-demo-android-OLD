@@ -18,7 +18,7 @@ import java.util.*
 object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
 
     const val CONTACT = "contact"
-    private const val DAPI_DEMO_DAP_ID = "8a0e3721aef3b07607642099de6d55894fe49e3b6c48ddb26a7cbc6c2ca947ac"
+    private const val DAPI_DEMO_DAP_ID = "c78a05c06876a61a3942c2e5618ceec0a51e301b2b708f908165a2c00ca32cb8"
 
     val gson = Gson()
 
@@ -62,7 +62,6 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         })
     }
 
-    //TODO: DapiClient separate DapSpace/DapContext callbacks
     fun getDapSpaceOrSignUp(aboutMe: String, cb: GetDapSpaceCallback) {
         getDapSpace(object : GetDapSpaceCallback{
             override fun onSuccess(dapSpace: DapSpace) {
@@ -72,7 +71,6 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
             override fun onError(errorMessage: String) {
                 val obj = Create.createDapObject("user")
                 obj.put("aboutme", aboutMe)
-                obj.put("avatar", "b") //TODO
                 commitSingleObject(obj, object : CommitDapObjectCallback {
                     override fun onSuccess(dapId: String, txId: String) {
                         getDapSpaceOrSignUp(aboutMe, cb)
@@ -175,12 +173,14 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
 
     fun addContact(user: BlockchainUser, cb: CommitDapObjectCallback) {
         val obj= Create.createDapObject("contact")
-        obj.put("hdextpubkey", user.pubkey)
         val userObj = JSONObject(mapOf(
                 "userId" to user.buid,
                 "type" to 0
         ))
-        obj.put("me", currentUser!!.buid)
+        //Fake signature, just to avoid two packets having the same id
+        val sig = HashUtils.toHash(JSONObject(gson.toJson(currentUser)))
+        Object.setMeta(obj, "sig", sig)
+
         obj.put("user", userObj)
         addObject(obj, cb)
     }

@@ -12,9 +12,6 @@
     "properties": {
       "aboutme": {
         "type": "string"
-      },
-      "avatar": {
-        "type": "string"
       }
     }
   },
@@ -26,23 +23,12 @@
       }
     ],
     "properties": {
-      "hdextpubkey": {
-        "type": "string"
-      },
-      "me": {
-        "type": "string"
-      },
       "user": {
         "$ref": "http://dash.org/schemas/sys#/definitions/relation"
-      },
-      "pub": {
-        "type": "string"
       }
     },
     "required": [
-      "hdextpubkey",
-      "user",
-      "me"
+      "user"
     ]
   },
   "store": {
