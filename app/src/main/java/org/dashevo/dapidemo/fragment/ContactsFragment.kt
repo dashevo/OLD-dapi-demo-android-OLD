@@ -11,14 +11,12 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import org.dashevo.dapiclient.callback.CommitDapObjectCallback
 import org.dashevo.dapiclient.callback.GetDapContextCallback
-import org.dashevo.dapiclient.callback.GetDapSpaceCallback
-import org.dashevo.dapiclient.model.BlockchainUserContainer
 import org.dashevo.dapiclient.model.DapContext
 import org.dashevo.dapidemo.R
 import org.dashevo.dapidemo.adapter.ContactRequestsAdapter
 import org.dashevo.dapidemo.adapter.ContactsAdapter
 import org.dashevo.dapidemo.adapter.ContactsAdapterImpl
-import org.dashevo.dapidemo.dapi.DashPayClient
+import org.dashevo.dapidemo.dapi.DapiDemoClient
 import org.dashevo.dapidemo.extensions.hide
 import org.dashevo.dapidemo.extensions.show
 import org.dashevo.dapidemo.model.Contact
@@ -79,7 +77,7 @@ class ContactsFragment : Fragment() {
             }
         }
 
-        DashPayClient.onContactsUpdated = object : DashPayClient.OnContactsUpdated {
+        DapiDemoClient.onContactsUpdated = object : DapiDemoClient.OnContactsUpdated {
             override fun onContactsUpdated() {
                 updateAdapter()
             }
@@ -95,16 +93,16 @@ class ContactsFragment : Fragment() {
 
     fun updateAdapter() {
         adapter?.contacts = when (fragmentType) {
-            Type.CONTACTS -> DashPayClient.contacts
-            Type.PENDING -> DashPayClient.pendingContacts
-            Type.REQUESTS -> DashPayClient.contactRequests
+            Type.CONTACTS -> DapiDemoClient.contacts
+            Type.PENDING -> DapiDemoClient.pendingContacts
+            Type.REQUESTS -> DapiDemoClient.contactRequests
         }
     }
 
     private val contactsItemClickListener = object : ContactsAdapterImpl.OnItemClickListener {
         override fun onRemoveClicked(contact: Contact) {
             progressBar.show()
-            DashPayClient.removeContact(contact.user.userId, object : CommitDapObjectCallback {
+            DapiDemoClient.removeContact(contact.user.userId, object : CommitDapObjectCallback {
                 override fun onSuccess(dapId: String, txId: String) {
                     adapter?.remove(contact)
                     progressBar.hide()
@@ -121,9 +119,9 @@ class ContactsFragment : Fragment() {
     private val contactRequestsItemClickListener = object : ContactRequestsAdapter.OnItemClickListener {
         override fun onAcceptClicked(userId: String) {
             progressBar.show()
-            DashPayClient.addContact(userId, object : CommitDapObjectCallback {
+            DapiDemoClient.addContact(userId, object : CommitDapObjectCallback {
                 override fun onSuccess(dapId: String, txId: String) {
-                    DashPayClient.getDapContext(object : GetDapContextCallback {
+                    DapiDemoClient.getDapContext(object : GetDapContextCallback {
                         override fun onSuccess(dapContext: DapContext) {
                             updateAdapter()
                             progressBar.hide()

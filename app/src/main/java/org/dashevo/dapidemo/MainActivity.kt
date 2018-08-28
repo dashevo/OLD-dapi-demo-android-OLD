@@ -17,7 +17,7 @@ import org.dashevo.dapiclient.callback.GetDapSpaceCallback
 import org.dashevo.dapiclient.model.DapContext
 import org.dashevo.dapiclient.model.DapSpace
 import org.dashevo.dapidemo.adapter.ContactsPagerAdapter
-import org.dashevo.dapidemo.dapi.DashPayClient
+import org.dashevo.dapidemo.dapi.DapiDemoClient
 import org.dashevo.dapidemo.extensions.hide
 import org.dashevo.dapidemo.extensions.show
 import org.dashevo.dapidemo.fragment.SearchUsersFragment
@@ -59,15 +59,14 @@ class MainActivity : AppCompatActivity() {
         viewPager.offscreenPageLimit = pagerAdapter.count
         tabLayout.setupWithViewPager(viewPager)
 
-        //TODO: merge fetchDapContext with setDap
-        val dapJson = JSONObject(readFromFile("dashpay-dap.json"))
-        DashPayClient.dapSchema = dapJson
+        val dapJson = JSONObject(readFromFile("dapi_demo_dap.json"))
+        DapiDemoClient.dapSchema = dapJson
         progressBar.show()
     }
 
     override fun onResume() {
         super.onResume()
-        if (DashPayClient.currentUser == null) {
+        if (DapiDemoClient.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
         } else {
             fetchDapContext()
@@ -76,8 +75,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun fetchDapContext() {
         progressBar.show()
-        if (!DashPayClient.checkDap()) {
-            DashPayClient.initDap(object : DapCallback {
+        if (!DapiDemoClient.checkDap()) {
+            DapiDemoClient.initDap(object : DapCallback {
                 override fun onSuccess(dapId: String) {
                     Log.i("DAP", "dap initialized successfully")
                     dapSignUp()
@@ -91,7 +90,7 @@ class MainActivity : AppCompatActivity() {
             })
         } else {
             progressBar.show()
-            DashPayClient.getDapContext(object : GetDapContextCallback {
+            DapiDemoClient.getDapContext(object : GetDapContextCallback {
                 override fun onSuccess(dapContext: DapContext) {
                     pagerAdapter.currentFragment?.updateAdapter()
                     progressBar.hide()
@@ -157,7 +156,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun dapSignUp() {
         progressBar.show()
-        DashPayClient.getDapSpaceOrSignUp("I'm ${DashPayClient.currentUser?.uname}",
+        DapiDemoClient.getDapSpaceOrSignUp("I'm ${DapiDemoClient.currentUser?.uname}",
                 object : GetDapSpaceCallback {
                     override fun onSuccess(dapSpace: DapSpace) {
                         fetchDapContext()

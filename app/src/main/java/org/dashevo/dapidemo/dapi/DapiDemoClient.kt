@@ -15,10 +15,10 @@ import org.dashevo.schema.util.HashUtils
 import org.jsonorg.JSONObject
 import java.util.*
 
-object DashPayClient : DapiClient("192.168.0.5", "8080") {
+object DapiDemoClient : DapiClient("192.168.0.5", "8080") {
 
     const val CONTACT = "contact"
-    private const val DASHPAY_DAP_ID = "f499704070cc0fb65f50f3fe3df27ad0829fb06e09b8b9fc7f37975ee74876ad"
+    private const val DAPI_DEMO_DAP_ID = "8a0e3721aef3b07607642099de6d55894fe49e3b6c48ddb26a7cbc6c2ca947ac"
 
     val gson = Gson()
 
@@ -29,7 +29,7 @@ object DashPayClient : DapiClient("192.168.0.5", "8080") {
     var onContactsUpdated: OnContactsUpdated? = null
 
     fun initDap(cb: DapCallback) {
-        getDap(DASHPAY_DAP_ID, object : DapCallback {
+        getDap(DAPI_DEMO_DAP_ID, object : DapCallback {
             override fun onSuccess(dapId: String) {
                 cb.onSuccess(dapId)
             }

@@ -1,6 +1,6 @@
 {
   "$id": "http://dash.org/schemas/sys/dapschema",
-  "title": "DashPay",
+  "title": "DapiDemo",
   "user": {
     "$id": "http://dash.org/schemas/sys/dapobject",
     "_isrole": true,

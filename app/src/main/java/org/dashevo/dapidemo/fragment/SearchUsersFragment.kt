@@ -16,7 +16,7 @@ import org.dashevo.dapiclient.model.BlockchainUser
 import org.dashevo.dapiclient.model.BlockchainUserContainer
 import org.dashevo.dapidemo.R
 import org.dashevo.dapidemo.adapter.SearchUsersAdapter
-import org.dashevo.dapidemo.dapi.DashPayClient
+import org.dashevo.dapidemo.dapi.DapiDemoClient
 import org.dashevo.dapidemo.extensions.hide
 import org.dashevo.dapidemo.extensions.show
 import java.util.*
@@ -53,7 +53,7 @@ class SearchUsersFragment : Fragment() {
             searchTimer = Timer()
             searchTimer.schedule(object : TimerTask() {
                 override fun run() {
-                    DashPayClient.searchUsers(query, object : UsersCallback {
+                    DapiDemoClient.searchUsers(query, object : UsersCallback {
                         override fun onSuccess(users: List<BlockchainUserContainer>) {
                             adapter.contacts = users
                             progressBar.hide()
@@ -73,7 +73,7 @@ class SearchUsersFragment : Fragment() {
 
     private fun addContact(user: BlockchainUser) {
         progressBar.show()
-        DashPayClient.addContact(user, object : CommitDapObjectCallback {
+        DapiDemoClient.addContact(user, object : CommitDapObjectCallback {
             override fun onSuccess(dapId: String, txId: String) {
                 Toast.makeText(activity, "contact successfully added", Toast.LENGTH_SHORT).show()
                 progressBar.hide()
