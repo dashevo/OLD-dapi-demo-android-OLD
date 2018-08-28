@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Dapi Demo</string>
+    <string name="username_label">Enter your username:</string>
+    <string name="recovery_phrase_label">This is your recovery phrase:</string>
+    <string name="dummy_recovery_phrase">think diary bacon run future thought  card consider rib soap mutual play</string>
+    <string name="login">Login</string>
+    <string name="added_you">%s added you as a contact</string>
+    <string name="contacts_search_action">Search for Users</string>
+    <string name="contacts_search_hint">Search a contact by username</string>
+</resources>
