@@ -8,13 +8,15 @@ DAP Objects will be created using
 [DAPI-Client-Android](https://github.com/dashevo/dapi-client-android)
 
 ## Dependencies 
+- Android JSON Schema: https://github.com/sambarboza/json-schema
 - VMN Dapi Rest: https://github.com/dashevo/vmn-dapi-rest
 - Dash Schema Android: https://github.com/dashevo/dash-schema-android
 - Dapi Client Android: https://github.com/dashevo/dapi-client-android
 
 ## Installation
-- Clone the 3 repos above in the same folder and run:
+- Clone the 4 repos above in the same folder and run:
   - `npm install` inside `vmn-dapi-rest`
+  - `mvn install -DskipTests` inside `json-schema`
   - `./gradlew assemble` inside `dash-schema-android` and `dapi-client-android`
   
 ## Running
