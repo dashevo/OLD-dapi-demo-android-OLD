@@ -1,8 +1,6 @@
 apply plugin: 'com.android.application'
-apply plugin: 'realm-android'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
 
 ext {
     androidSupportVersion = '26.1.0'
@@ -37,18 +35,11 @@ android {
     packagingOptions {
         exclude 'dash_system_schema.json'
         exclude 'schema_v7.json'
-
-        exclude 'lib/x86_64/darwin/libscrypt.dylib'
-        exclude 'lib/x86_64/freebsd/libscrypt.so'
-        exclude 'lib/x86_64/linux/libscrypt.so'
         /*
 
         exclude 'javax/annotation/meta/*'
         exclude 'javax/annotation/**'
         */
-    }
-    applicationVariants.all { variant ->
-        variant.getRuntimeConfiguration().exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
 }
 
@@ -63,6 +54,7 @@ dependencies {
     implementation 'me.zhanghai.android.materialprogressbar:library:1.4.2'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation ('org.dashevo:dapi-client:1.0-SNAPSHOT') {
+        exclude module: 'jsr305'
         exclude group: 'com.google.guava'
     }
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
