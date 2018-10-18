@@ -2,6 +2,7 @@ package org.dashevo.dapidemo.dapi
 
 import android.util.Log
 import com.google.gson.Gson
+import io.realm.Realm
 import org.dashevo.dapiclient.DapiClient
 import org.dashevo.dapiclient.callback.*
 import org.dashevo.dapiclient.model.BlockchainUser
@@ -15,7 +16,7 @@ import org.dashevo.schema.util.HashUtils
 import org.jsonorg.JSONObject
 import java.util.*
 
-object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
+object DapiDemoClient : DapiClient("192.168.0.6", "8080", true) {
 
     const val CONTACT = "contact"
     private const val DAPI_DEMO_DAP_ID = "c78a05c06876a61a3942c2e5618ceec0a51e301b2b708f908165a2c00ca32cb8"
@@ -23,7 +24,7 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
     val gson = Gson()
 
     var dapSchema: JSONObject = JSONObject()
-    var contacts =  arrayListOf<Contact>()
+    var contacts = arrayListOf<Contact>()
     var contactRequests = arrayListOf<Contact>()
     var pendingContacts = arrayListOf<Contact>()
     var onContactsUpdated: OnContactsUpdated? = null
@@ -63,7 +64,7 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
     }
 
     fun getDapSpaceOrSignUp(aboutMe: String, cb: GetDapSpaceCallback) {
-        getDapSpace(object : GetDapSpaceCallback{
+        getDapSpace(object : GetDapSpaceCallback {
             override fun onSuccess(dapSpace: DapSpace) {
                 cb.onSuccess(dapSpace)
             }
@@ -146,6 +147,12 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
                 )
             }
 
+            Realm.getDefaultInstance().use {
+                it.executeTransaction {
+                    it.insert(contacts)
+                }
+            }
+
             cb.onSuccess(dapContext)
             onContactsUpdated?.onContactsUpdated()
         } else {
@@ -172,7 +179,7 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
     }
 
     fun addContact(user: BlockchainUser, cb: CommitDapObjectCallback) {
-        val obj= Create.createDapObject("contact")
+        val obj = Create.createDapObject("contact")
         val userObj = JSONObject(mapOf(
                 "userId" to user.buid,
                 "type" to 0
