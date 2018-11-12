@@ -9,8 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.Toast
-import org.dashevo.dapiclient.callback.CommitDapObjectCallback
-import org.dashevo.dapiclient.callback.GetDapContextCallback
+import org.dashevo.dapiclient.callback.BaseCallback
+import org.dashevo.dapiclient.callback.BaseTxCallback
 import org.dashevo.dapiclient.model.DapContext
 import org.dashevo.dapidemo.R
 import org.dashevo.dapidemo.adapter.ContactRequestsAdapter
@@ -102,7 +102,7 @@ class ContactsFragment : Fragment() {
     private val contactsItemClickListener = object : ContactsAdapterImpl.OnItemClickListener {
         override fun onRemoveClicked(contact: Contact) {
             progressBar.show()
-            DapiDemoClient.removeContact(contact.user.userId, object : CommitDapObjectCallback {
+            DapiDemoClient.removeContact(contact.user.userId, object : BaseTxCallback<String, String> {
                 override fun onSuccess(dapId: String, txId: String) {
                     adapter?.remove(contact)
                     progressBar.hide()
@@ -119,9 +119,9 @@ class ContactsFragment : Fragment() {
     private val contactRequestsItemClickListener = object : ContactRequestsAdapter.OnItemClickListener {
         override fun onAcceptClicked(userId: String) {
             progressBar.show()
-            DapiDemoClient.addContact(userId, object : CommitDapObjectCallback {
+            DapiDemoClient.addContact(userId, object : BaseTxCallback<String, String> {
                 override fun onSuccess(dapId: String, txId: String) {
-                    DapiDemoClient.getDapContext(object : GetDapContextCallback {
+                    DapiDemoClient.getDapContext(object : BaseCallback<DapContext> {
                         override fun onSuccess(dapContext: DapContext) {
                             updateAdapter()
                             progressBar.hide()

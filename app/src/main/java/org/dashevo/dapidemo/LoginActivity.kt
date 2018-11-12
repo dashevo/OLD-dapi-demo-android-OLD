@@ -6,7 +6,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
-import org.dashevo.dapiclient.callback.LoginCallback
+import org.dashevo.dapiclient.callback.BaseCallback
 import org.dashevo.dapiclient.model.BlockchainUser
 import org.dashevo.dapidemo.dapi.DapiDemoClient
 import org.dashevo.dapidemo.extensions.hide
@@ -25,7 +25,7 @@ class LoginActivity : AppCompatActivity() {
 
         loginBtn.setOnClickListener {
             progressBar.show()
-            DapiDemoClient.loginOrCreateUser(username.text.toString(), object : LoginCallback {
+            DapiDemoClient.loginOrCreateUser(username.text.toString(), object : BaseCallback<BlockchainUser> {
                 override fun onSuccess(blockchainUser: BlockchainUser) {
                     progressBar.hide()
                     finish()
