@@ -35,8 +35,10 @@ android {
     packagingOptions {
         exclude 'dash_system_schema.json'
         exclude 'schema_v7.json'
+        exclude 'lib/x86_64/darwin/libscrypt.dylib'
+        exclude 'lib/x86_64/freebsd/libscrypt.so'
+        exclude 'lib/x86_64/linux/libscrypt.so'
         /*
-
         exclude 'javax/annotation/meta/*'
         exclude 'javax/annotation/**'
         */
