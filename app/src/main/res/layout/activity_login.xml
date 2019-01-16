@@ -13,6 +13,33 @@
         app:mpb_useIntrinsicPadding="false"
         style="@style/progress_bar" />
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp">
+
+        <TextView
+            android:id="@+id/balance"
+            android:text="@string/username_label"
+            style="@style/login_form_label" />
+
+        <TextView
+            android:id="@+id/address"
+            android:text="@string/username_label"
+            style="@style/login_form_label" />
+
+        <TextView
+            android:id="@+id/best_chain_height"
+            android:text="@string/username_label"
+            style="@style/login_form_label" />
+
+        <TextView
+            android:id="@+id/blocks_left"
+            android:text="@string/username_label"
+            style="@style/login_form_label" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_centerInParent="true"
@@ -38,8 +65,6 @@
             style="@style/login_form_label" />
 
         <EditText
-            tools:visibility="visible"
-            android:visibility="gone"
             android:id="@+id/recovery_phrase"
             android:lines="4"
             android:text="@string/dummy_recovery_phrase"

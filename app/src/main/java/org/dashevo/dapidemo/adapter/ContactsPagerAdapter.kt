@@ -31,10 +31,11 @@ class ContactsPagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm) 
         }
     }
 
-    override fun setPrimaryItem(container: ViewGroup?, position: Int, obj: Any?) {
+    override fun setPrimaryItem(container: ViewGroup, position: Int, obj: Any) {
         if (currentFragment != obj && obj is ContactsFragment) {
             currentFragment = obj
         }
         super.setPrimaryItem(container, position, obj)
     }
+
 }

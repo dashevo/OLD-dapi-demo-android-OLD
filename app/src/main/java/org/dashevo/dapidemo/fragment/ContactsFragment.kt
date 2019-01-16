@@ -43,7 +43,7 @@ class ContactsFragment : Fragment() {
         }
     }
 
-    private val fragmentType by lazy { arguments.getSerializable(FRAGMENT_TYPE) as Type }
+    private val fragmentType by lazy { arguments?.getSerializable(FRAGMENT_TYPE) as Type }
     private val contactsRv by lazy { view!!.findViewById<RecyclerView>(R.id.contactsRv) }
     private val progressBar by lazy { view!!.findViewById<ProgressBar>(R.id.progressBar) }
     private var adapter: ContactsAdapter? = null
@@ -52,7 +52,7 @@ class ContactsFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_contacts, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         contactsRv.layoutManager = LinearLayoutManager(activity)

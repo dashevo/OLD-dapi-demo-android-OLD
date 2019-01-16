@@ -23,6 +23,8 @@ import org.dashevo.dapidemo.extensions.show
 import org.dashevo.dapidemo.fragment.SearchUsersFragment
 import org.dashevo.schema.Schema
 import org.dashevo.schema.SchemaLoader
+import org.dashj.dashjinterface.WalletAppKitService
+import org.dashj.dashjinterface.config.DevNetMaithainConfig
 import org.jsonorg.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
@@ -62,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         val dapJson = JSONObject(readFromFile("dapi_demo_dap.json"))
         DapiDemoClient.dapSchema = dapJson
         progressBar.show()
+
     }
 
     override fun onResume() {
