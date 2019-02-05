@@ -10,8 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.Toast
-import org.dashevo.dapiclient.callback.CommitDapObjectCallback
-import org.dashevo.dapiclient.callback.UsersCallback
+import org.dashevo.dapiclient.callback.BaseCallback
+import org.dashevo.dapiclient.callback.BaseTxCallback
 import org.dashevo.dapiclient.model.BlockchainUser
 import org.dashevo.dapiclient.model.BlockchainUserContainer
 import org.dashevo.dapidemo.R
@@ -53,7 +53,7 @@ class SearchUsersFragment : Fragment() {
             searchTimer = Timer()
             searchTimer.schedule(object : TimerTask() {
                 override fun run() {
-                    DapiDemoClient.searchUsers(query, object : UsersCallback {
+                    DapiDemoClient.searchUsers(query, object : BaseCallback<List<BlockchainUserContainer>> {
                         override fun onSuccess(users: List<BlockchainUserContainer>) {
                             adapter.contacts = users
                             progressBar.hide()
@@ -73,7 +73,7 @@ class SearchUsersFragment : Fragment() {
 
     private fun addContact(user: BlockchainUser) {
         progressBar.show()
-        DapiDemoClient.addContact(user, object : CommitDapObjectCallback {
+        DapiDemoClient.addContact(user, object : BaseTxCallback<String, String> {
             override fun onSuccess(dapId: String, txId: String) {
                 Toast.makeText(activity, "contact successfully added", Toast.LENGTH_SHORT).show()
                 progressBar.hide()

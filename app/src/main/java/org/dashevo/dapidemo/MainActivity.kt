@@ -11,9 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
 import android.widget.Toast
-import org.dashevo.dapiclient.callback.DapCallback
-import org.dashevo.dapiclient.callback.GetDapContextCallback
-import org.dashevo.dapiclient.callback.GetDapSpaceCallback
+import org.dashevo.dapiclient.callback.BaseCallback
 import org.dashevo.dapiclient.model.DapContext
 import org.dashevo.dapiclient.model.DapSpace
 import org.dashevo.dapidemo.adapter.ContactsPagerAdapter
@@ -76,7 +74,7 @@ class MainActivity : AppCompatActivity() {
     private fun fetchDapContext() {
         progressBar.show()
         if (!DapiDemoClient.checkDap()) {
-            DapiDemoClient.initDap(object : DapCallback {
+            DapiDemoClient.initDap(object : BaseCallback<String> {
                 override fun onSuccess(dapId: String) {
                     Log.i("DAP", "dap initialized successfully")
                     dapSignUp()
@@ -90,7 +88,7 @@ class MainActivity : AppCompatActivity() {
             })
         } else {
             progressBar.show()
-            DapiDemoClient.getDapContext(object : GetDapContextCallback {
+            DapiDemoClient.getDapContext(object : BaseCallback<DapContext> {
                 override fun onSuccess(dapContext: DapContext) {
                     pagerAdapter.currentFragment?.updateAdapter()
                     progressBar.hide()
@@ -157,7 +155,7 @@ class MainActivity : AppCompatActivity() {
     private fun dapSignUp() {
         progressBar.show()
         DapiDemoClient.getDapSpaceOrSignUp("I'm ${DapiDemoClient.currentUser?.uname}",
-                object : GetDapSpaceCallback {
+                object : BaseCallback<DapSpace> {
                     override fun onSuccess(dapSpace: DapSpace) {
                         fetchDapContext()
                         progressBar.hide()

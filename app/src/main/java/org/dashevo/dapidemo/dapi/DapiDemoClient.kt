@@ -3,7 +3,8 @@ package org.dashevo.dapidemo.dapi
 import android.util.Log
 import com.google.gson.Gson
 import org.dashevo.dapiclient.DapiClient
-import org.dashevo.dapiclient.callback.*
+import org.dashevo.dapiclient.callback.BaseCallback
+import org.dashevo.dapiclient.callback.BaseTxCallback
 import org.dashevo.dapiclient.model.BlockchainUser
 import org.dashevo.dapiclient.model.BlockchainUserContainer
 import org.dashevo.dapiclient.model.DapContext
@@ -15,7 +16,7 @@ import org.dashevo.schema.util.HashUtils
 import org.jsonorg.JSONObject
 import java.util.*
 
-object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
+object DapiDemoClient : DapiClient("192.168.0.1", "8080") {
 
     const val CONTACT = "contact"
     private const val DAPI_DEMO_DAP_ID = "c78a05c06876a61a3942c2e5618ceec0a51e301b2b708f908165a2c00ca32cb8"
@@ -28,8 +29,8 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
     var pendingContacts = arrayListOf<Contact>()
     var onContactsUpdated: OnContactsUpdated? = null
 
-    fun initDap(cb: DapCallback) {
-        getDap(DAPI_DEMO_DAP_ID, object : DapCallback {
+    fun initDap(cb: BaseCallback<String>) {
+        getDap(DAPI_DEMO_DAP_ID, object : BaseCallback<String> {
             override fun onSuccess(dapId: String) {
                 cb.onSuccess(dapId)
             }
@@ -40,15 +41,15 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         })
     }
 
-    fun loginOrCreateUser(username: String, cb: LoginCallback) {
-        login(username, object : LoginCallback {
+    fun loginOrCreateUser(username: String, cb: BaseCallback<BlockchainUser>) {
+        login(username, object : BaseCallback<BlockchainUser> {
             override fun onSuccess(blockchainUser: BlockchainUser) {
                 cb.onSuccess(blockchainUser)
             }
 
             override fun onError(errorMessage: String) {
                 val fakePubKey = HashUtils.toHash(JSONObject(mapOf("username" to username)))
-                createUser(username, fakePubKey, object : CreateUserCallback {
+                createUser(username, fakePubKey, object : BaseTxCallback<String, String> {
                     override fun onSuccess(userId: String, txId: String) {
                         loginOrCreateUser(username, cb)
                     }
@@ -62,8 +63,8 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         })
     }
 
-    fun getDapSpaceOrSignUp(aboutMe: String, cb: GetDapSpaceCallback) {
-        getDapSpace(object : GetDapSpaceCallback{
+    fun getDapSpaceOrSignUp(aboutMe: String, cb: BaseCallback<DapSpace>) {
+        getDapSpace(object : BaseCallback<DapSpace> {
             override fun onSuccess(dapSpace: DapSpace) {
                 cb.onSuccess(dapSpace)
             }
@@ -71,7 +72,7 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
             override fun onError(errorMessage: String) {
                 val obj = Create.createDapObject("user")
                 obj.put("aboutme", aboutMe)
-                commitSingleObject(obj, object : CommitDapObjectCallback {
+                commitSingleObject(obj, object : BaseTxCallback<String, String> {
                     override fun onSuccess(dapId: String, txId: String) {
                         getDapSpaceOrSignUp(aboutMe, cb)
                     }
@@ -84,8 +85,8 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         })
     }
 
-    override fun getDapContext(cb: GetDapContextCallback) {
-        super.getDapContext(object : GetDapContextCallback {
+    override fun getDapContext(cb: BaseCallback<DapContext>) {
+        super.getDapContext(object : BaseCallback<DapContext> {
             override fun onSuccess(dapContext: DapContext) {
                 contacts.clear()
                 pendingContacts.clear()
@@ -121,7 +122,7 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         })
     }
 
-    private fun getContactUsers(ids: ArrayList<String>, dapContext: DapContext, cb: GetDapContextCallback) {
+    private fun getContactUsers(ids: ArrayList<String>, dapContext: DapContext, cb: BaseCallback<DapContext>) {
         if (ids.isEmpty()) {
             val iterator = pendingContacts.iterator()
             while (iterator.hasNext()) {
@@ -151,7 +152,7 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         } else {
             val userId = ids[ids.size - 1]
             ids.remove(userId)
-            getUser(userId, object : GetUserCallback {
+            getUser(userId, object : BaseCallback<BlockchainUserContainer> {
                 override fun onSuccess(blockchainUserContainer: BlockchainUserContainer) {
                     val contact: Contact? = contacts.firstOrNull { it.meta?.buid ?: it.user.userId == userId }
                     val pendingContact: Contact? = pendingContacts.firstOrNull { it.meta?.buid ?: it.user.userId == userId }
@@ -171,8 +172,8 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         }
     }
 
-    fun addContact(user: BlockchainUser, cb: CommitDapObjectCallback) {
-        val obj= Create.createDapObject("contact")
+    fun addContact(user: BlockchainUser, cb: BaseTxCallback<String, String>) {
+        val obj = Create.createDapObject("contact")
         val userObj = JSONObject(mapOf(
                 "userId" to user.buid,
                 "type" to 0
@@ -185,8 +186,8 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         addObject(obj, cb)
     }
 
-    fun addContact(userId: String, cb: CommitDapObjectCallback) {
-        getUser(userId, object : GetUserCallback {
+    fun addContact(userId: String, cb: BaseTxCallback<String, String>) {
+        getUser(userId, object : BaseCallback<BlockchainUserContainer> {
             override fun onSuccess(blockchainUserContainer: BlockchainUserContainer) {
                 addContact(blockchainUserContainer.blockchainuser, cb)
             }
@@ -197,7 +198,7 @@ object DapiDemoClient : DapiClient("127.0.0.1", "8080") {
         })
     }
 
-    fun removeContact(userId: String, cb: CommitDapObjectCallback) {
+    fun removeContact(userId: String, cb: BaseTxCallback<String, String>) {
         val contactsMerge = ArrayList<Contact>(contacts)
         contactsMerge.addAll(pendingContacts)
 
