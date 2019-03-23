@@ -5,17 +5,15 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
-import org.dashevo.dapiclient.model.BlockchainUser
-import org.dashevo.dapiclient.model.BlockchainUserContainer
 import org.dashevo.dapidemo.R
+import org.dashevo.dapidemo.model.DapiDemoUser
 
 class SearchUsersAdapter : RecyclerView.Adapter<SearchUsersAdapter.SearchResultViewHolder>() {
 
     var onItemClickListener: OnItemClickListener? = null
 
-    var contacts: List<BlockchainUserContainer> = arrayListOf()
+    var contacts: List<DapiDemoUser> = arrayListOf()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -28,7 +26,7 @@ class SearchUsersAdapter : RecyclerView.Adapter<SearchUsersAdapter.SearchResultV
     }
 
     override fun onBindViewHolder(holder: SearchResultViewHolder, position: Int) {
-        holder.bind(contacts[position].blockchainuser)
+        holder.bind(contacts[position])
     }
 
     override fun getItemCount(): Int {
@@ -40,8 +38,8 @@ class SearchUsersAdapter : RecyclerView.Adapter<SearchUsersAdapter.SearchResultV
         val username: TextView by lazy { itemView.findViewById<TextView>(R.id.username) }
         val addBtn: AppCompatImageButton by lazy { itemView.findViewById<AppCompatImageButton>(R.id.addBtn) }
 
-        fun bind(user: BlockchainUser) {
-            username.text = user.uname
+        fun bind(user: DapiDemoUser) {
+            username.text = user.username
             addBtn.setOnClickListener {
                 onItemClickListener?.onItemClicked(user)
             }
@@ -50,7 +48,7 @@ class SearchUsersAdapter : RecyclerView.Adapter<SearchUsersAdapter.SearchResultV
     }
 
     interface OnItemClickListener {
-        fun onItemClicked(blockchainUserContainer: BlockchainUser)
+        fun onItemClicked(dapiDemoUser: DapiDemoUser)
     }
 
 }

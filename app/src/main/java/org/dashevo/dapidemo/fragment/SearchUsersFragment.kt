@@ -1,5 +1,7 @@
 package org.dashevo.dapidemo.fragment
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -10,15 +12,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.Toast
-import org.dashevo.dapiclient.callback.CommitDapObjectCallback
-import org.dashevo.dapiclient.callback.UsersCallback
-import org.dashevo.dapiclient.model.BlockchainUser
-import org.dashevo.dapiclient.model.BlockchainUserContainer
+import org.dashevo.dapiclient.callback.DapiRequestCallback
+import org.dashevo.dapiclient.model.JsonRPCResponse
+import org.dashevo.dapidemo.MainApplication
 import org.dashevo.dapidemo.R
 import org.dashevo.dapidemo.adapter.SearchUsersAdapter
-import org.dashevo.dapidemo.dapi.DapiDemoClient
 import org.dashevo.dapidemo.extensions.hide
 import org.dashevo.dapidemo.extensions.show
+import org.dashevo.dapidemo.model.DapiDemoUser
+import org.dashevo.dapidemo.model.MainViewModel
+import org.dashevo.dapidemo.model.MainViewModel.Companion.DAPI_ID
 import java.util.*
 
 class SearchUsersFragment : Fragment() {
@@ -28,6 +31,8 @@ class SearchUsersFragment : Fragment() {
     private val searchDelay = 500L
     private val searchRv by lazy { view!!.findViewById<RecyclerView>(R.id.searchRv) }
     private val progressBar: ProgressBar by lazy { view!!.findViewById<ProgressBar>(R.id.progressBar) }
+    private val dapiClient = MainApplication.instance.dapiClient
+    private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_search_users, container, false)
@@ -39,11 +44,24 @@ class SearchUsersFragment : Fragment() {
         searchRv.layoutManager = LinearLayoutManager(activity)
         searchRv.adapter = adapter
 
+        viewModel = ViewModelProviders.of(activity!!).get(MainViewModel::class.java)
+        viewModel.walletInfoLiveData.observe(this, Observer {
+            //workaround to connect to peers
+        })
+        viewModel.djService.observe(this, Observer { djServiceLiveData ->
+            Toast.makeText(context, if (djServiceLiveData != null) "Connected" else "Disconnected", Toast.LENGTH_LONG).show()
+        })
+
         adapter.onItemClickListener = object : SearchUsersAdapter.OnItemClickListener {
-            override fun onItemClicked(blockchainUserContainer: BlockchainUser) {
-                addContact(blockchainUserContainer)
+            override fun onItemClicked(dapiDemoUser: DapiDemoUser) {
+                addContact(dapiDemoUser)
             }
         }
+        loadUsers()
+    }
+
+    private fun loadUsers() {
+        MainApplication.instance.dapiClient
     }
 
     fun search(query: String) {
@@ -53,9 +71,9 @@ class SearchUsersFragment : Fragment() {
             searchTimer = Timer()
             searchTimer.schedule(object : TimerTask() {
                 override fun run() {
-                    DapiDemoClient.searchUsers(query, object : UsersCallback {
-                        override fun onSuccess(users: List<BlockchainUserContainer>) {
-                            adapter.contacts = users
+                    dapiClient.fetchDapObjects(DAPI_ID, "user", object : DapiRequestCallback<List<DapiDemoUser>> {
+                        override fun onSuccess(data: JsonRPCResponse<List<DapiDemoUser>>) {
+                            adapter.contacts = data.result!!
                             progressBar.hide()
                         }
 
@@ -63,7 +81,7 @@ class SearchUsersFragment : Fragment() {
                             Log.d("Error", "Error $errorMessage")
                             progressBar.hide()
                         }
-                    })
+                    }, mapOf("data.username" to mapOf("\$regex" to "^$query")) )
                 }
             }, searchDelay)
         } else {
@@ -71,18 +89,17 @@ class SearchUsersFragment : Fragment() {
         }
     }
 
-    private fun addContact(user: BlockchainUser) {
+    private fun addContact(user: DapiDemoUser) {
         progressBar.show()
-        DapiDemoClient.addContact(user, object : CommitDapObjectCallback {
-            override fun onSuccess(dapId: String, txId: String) {
-                Toast.makeText(activity, "contact successfully added", Toast.LENGTH_SHORT).show()
-                progressBar.hide()
+        viewModel.createContactRequest(user.username, object : DapiRequestCallback<String> {
+            override fun onSuccess(data: JsonRPCResponse<String>) {
+                Toast.makeText(this@SearchUsersFragment.context, "Success", Toast.LENGTH_SHORT).show()
             }
 
             override fun onError(errorMessage: String) {
-                Toast.makeText(activity, "failed to add contact", Toast.LENGTH_SHORT).show()
-                progressBar.hide()
+                Toast.makeText(this@SearchUsersFragment.context, "Error", Toast.LENGTH_SHORT).show()
             }
         })
     }
+
 }

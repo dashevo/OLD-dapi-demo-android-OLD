@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.*
+import org.dashevo.dapiclient.model.BlockchainUser
 import org.dashevo.dapidemo.extensions.hide
 import org.dashevo.dapidemo.extensions.show
 import org.dashevo.dapidemo.model.MainViewModel
@@ -48,8 +49,19 @@ class LoginActivity : AppCompatActivity() {
         })
         loginBtn.setOnClickListener {
             progressBar.show()
-            viewModel.createUser(username.text.toString())
+            viewModel.createUser(username.text.toString(), this)
         }
+        viewModel.currentUser.observe(this, Observer<BlockchainUser> {
+            if (it != null) {
+                progressBar.hide()
+                finish()
+            }
+        })
     }
+}
 
+fun ByteArray.toHexString(): String {
+    return this.joinToString("") {
+        java.lang.String.format("%02x", it)
+    }
 }

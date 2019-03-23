@@ -66,6 +66,8 @@
 
         <EditText
             android:id="@+id/recovery_phrase"
+            tools:visibility="visible"
+            android:visibility="gone"
             android:lines="4"
             android:text="@string/dummy_recovery_phrase"
             android:lineSpacingExtra="3sp"

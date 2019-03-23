@@ -1,6 +1,6 @@
 {
   "$id": "http://dash.org/schemas/sys/dapschema",
-  "title": "DapiDemo4",
+  "title": "DapiDemo",
   "user": {
     "$id": "http://dash.org/schemas/sys/dapobject",
     "_isrole": true,
@@ -11,9 +11,6 @@
     ],
     "properties": {
       "aboutme": {
-        "type": "string"
-      },
-      "username": {
         "type": "string"
       }
     }
@@ -28,26 +25,10 @@
     "properties": {
       "user": {
         "$ref": "http://dash.org/schemas/sys#/definitions/relation"
-      },
-      "username": {
-        "type": "string"
-      },
-      "sender": {
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          }
-        }
       }
     },
     "required": [
-      "user",
-      "username",
-      "me"
+      "user"
     ]
   },
   "store": {
