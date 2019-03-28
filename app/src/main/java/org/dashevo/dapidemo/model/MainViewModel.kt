@@ -142,7 +142,7 @@ class MainViewModel(application: Application) : DjInterfaceViewModel(application
     private fun createProfile(userRegTxId: Sha256Hash, hashPrevSubTx: Sha256Hash) {
         val userObj = Create.createDapObject("user")
         userObj.put("bio", "Hey, I am $currentUsername, a DapiDemo User :D")
-        userObj.put("displayName", currentUsername)
+        userObj.put("username", currentUsername)
 
         dapiClient.sendDapObject(userObj, DAPI_ID, userRegTxId, hashPrevSubTx, getPrivKey(),
                 object : DapiRequestCallback<String> {
