@@ -71,7 +71,7 @@ class SearchUsersFragment : Fragment() {
             searchTimer = Timer()
             searchTimer.schedule(object : TimerTask() {
                 override fun run() {
-                    dapiClient.fetchDapObjects(DAPI_ID, "user", object : DapiRequestCallback<List<DapiDemoUser>> {
+                    dapiClient.fetchDapObjects(DAPI_ID, "profile", object : DapiRequestCallback<List<DapiDemoUser>> {
                         override fun onSuccess(data: JsonRPCResponse<List<DapiDemoUser>>) {
                             adapter.contacts = data.result!!
                             progressBar.hide()
@@ -81,7 +81,7 @@ class SearchUsersFragment : Fragment() {
                             Log.d("Error", "Error $errorMessage")
                             progressBar.hide()
                         }
-                    }, mapOf("data.username" to mapOf("\$regex" to "^$query")) )
+                    }, mapOf("data.bUserName" to mapOf("\$regex" to "^$query")) )
                 }
             }, searchDelay)
         } else {
@@ -91,7 +91,7 @@ class SearchUsersFragment : Fragment() {
 
     private fun addContact(user: DapiDemoUser) {
         progressBar.show()
-        viewModel.createContactRequest(user.username, object : DapiRequestCallback<String> {
+        viewModel.createContactRequest(user.bUserName, false, object : DapiRequestCallback<String> {
             override fun onSuccess(data: JsonRPCResponse<String>) {
                 Toast.makeText(this@SearchUsersFragment.context, "Success", Toast.LENGTH_SHORT).show()
             }

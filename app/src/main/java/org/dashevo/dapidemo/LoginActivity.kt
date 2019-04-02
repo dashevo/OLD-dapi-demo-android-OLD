@@ -3,6 +3,11 @@ package org.dashevo.dapidemo
 import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -38,6 +43,10 @@ class LoginActivity : AppCompatActivity() {
             addressTxt.text = "address: ${it?.currentReceiveAddress}"
             addressTxt.setOnClickListener { _ ->
                 Log.d("address", "${it?.currentReceiveAddress}")
+                val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboardManager.primaryClip = ClipData.newPlainText("Dash Address",
+                        it?.currentReceiveAddress?.toBase58())
+                Toast.makeText(this, "copied to clipboard", Toast.LENGTH_LONG).show()
             }
             viewModel.blockchainState.observe(this, Observer {
                 bestChainHeightTxt.text = "bestChainHeight: ${it?.bestChainHeight}"

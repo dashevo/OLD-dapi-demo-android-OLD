@@ -63,19 +63,19 @@ class ContactsFragment : Fragment() {
         contactsRv.layoutManager = LinearLayoutManager(activity)
         contactsRv.adapter = when (fragmentType) {
             Type.CONTACTS -> {
-                val result = ContactsAdapterImpl()
+                val result = ContactsAdapterImpl(viewModel)
                 result.itemClickListener = contactsItemClickListener
                 adapter = result
                 result
             }
             Type.PENDING -> {
-                val result = ContactsAdapterImpl()
+                val result = ContactsAdapterImpl(viewModel)
                 result.itemClickListener = contactsItemClickListener
                 adapter = result
                 result
             }
             Type.REQUESTS -> {
-                val result = ContactRequestsAdapter()
+                val result = ContactRequestsAdapter(viewModel)
                 result.itemClickListener = contactRequestsItemClickListener
                 adapter = result
                 result
@@ -145,7 +145,7 @@ class ContactsFragment : Fragment() {
     private val contactRequestsItemClickListener = object : ContactRequestsAdapter.OnItemClickListener {
         override fun onAcceptClicked(username: String) {
             progressBar.show()
-            viewModel.createContactRequest(username, object : DapiRequestCallback<String> {
+            viewModel.createContactRequest(username, true, object : DapiRequestCallback<String> {
                 override fun onSuccess(data: JsonRPCResponse<String>) {
                     Toast.makeText(activity, "Success", Toast.LENGTH_SHORT).show()
                     progressBar.hide()

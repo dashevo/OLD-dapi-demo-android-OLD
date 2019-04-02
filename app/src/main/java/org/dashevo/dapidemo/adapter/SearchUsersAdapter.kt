@@ -39,7 +39,7 @@ class SearchUsersAdapter : RecyclerView.Adapter<SearchUsersAdapter.SearchResultV
         val addBtn: AppCompatImageButton by lazy { itemView.findViewById<AppCompatImageButton>(R.id.addBtn) }
 
         fun bind(user: DapiDemoUser) {
-            username.text = user.username
+            username.text = user.bUserName
             addBtn.setOnClickListener {
                 onItemClickListener?.onItemClicked(user)
             }

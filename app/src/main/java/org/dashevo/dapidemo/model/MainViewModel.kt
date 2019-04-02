@@ -26,7 +26,7 @@ import java.util.*
 class MainViewModel(application: Application) : DjInterfaceViewModel(application) {
 
     companion object {
-        const val DAPI_ID = "9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444"
+        const val DAPI_ID = "e72ad53cf7113788bf399b4e6df7b83726d24acde5109066fb829dd4065ee4d9"
     }
 
     var userRegTx: Sha256Hash? = null
@@ -121,13 +121,15 @@ class MainViewModel(application: Application) : DjInterfaceViewModel(application
             }
 
             override fun onError(errorMessage: String) {
-                createContract(userRegTxId, userLastSubTx, ctx)
+                //Ignoring error for DashPay Contract not found
+                createProfile(userRegTxId, userLastSubTx)
+                //createContract(userRegTxId, userLastSubTx, ctx)
             }
         })
     }
 
     private fun createContract(userRegTxId: Sha256Hash, hashPrevSubTx: Sha256Hash, ctx: Context) {
-        val dapSchema = JSONObject(ctx.readFromFile("dapi_demo_dap.json"))
+        val dapSchema = JSONObject(ctx.readFromFile("dashpay_contract.json"))
         dapiClient.registerDap(dapSchema, userRegTxId, hashPrevSubTx, getPrivKey(), object : DapiRequestCallback<String> {
             override fun onSuccess(txId: JsonRPCResponse<String>) {
                 createProfile(userRegTxId, Sha256Hash.wrap(txId.result))
@@ -140,9 +142,10 @@ class MainViewModel(application: Application) : DjInterfaceViewModel(application
     }
 
     private fun createProfile(userRegTxId: Sha256Hash, hashPrevSubTx: Sha256Hash) {
-        val userObj = Create.createDapObject("user")
+        val userObj = Create.createDapObject("profile")
         userObj.put("bio", "Hey, I am $currentUsername, a DapiDemo User :D")
-        userObj.put("username", currentUsername)
+        userObj.put("bUserName", currentUsername)
+        userObj.put("displayName", "I'm the real $currentUsername")
 
         dapiClient.sendDapObject(userObj, DAPI_ID, userRegTxId, hashPrevSubTx, getPrivKey(),
                 object : DapiRequestCallback<String> {
@@ -171,90 +174,88 @@ class MainViewModel(application: Application) : DjInterfaceViewModel(application
         })
     }
 
-    fun createContactRequest(username: String, cb: DapiRequestCallback<String>) {
-        dapiClient.getUser(username, object : DapiRequestCallback<BlockchainUser> {
-            override fun onSuccess(data: JsonRPCResponse<BlockchainUser>) {
-                val currentUser = this@MainViewModel.currentUser.value!!
-                val contactObj = Create.createDapObject("contact")
-                contactObj.put("user", data.result!!.regtxid)
-                contactObj.put("username", username)
+    fun createContactRequest(username: String, accept: Boolean, cb: DapiRequestCallback<String>) {
+        val currentUser = this@MainViewModel.currentUser.value!!
+        val contactObj = Create.createDapObject("contact")
+        contactObj.put("action", if (accept) "accept" else "request")
+        contactObj.put("from", currentUser.uname)
+        //stub pub key
+        contactObj.put("content", "tpubDDWsgxTGAT4Byi8KqV9QhnUwtS6DtkZooSpPkSi25LchNeFQYL58RYYePvBcXeaE7eH4KwP8BGYYCGL5DaYQTz3BcqXGvzk1PQTwe6ffT98")
+        contactObj.put("relation", username)
 
-                val me = JSONObject()
-                me.put("id", currentUser.regtxid)
-                me.put("username", currentUser.uname)
+        val userRegTxId = Sha256Hash.wrap(currentUser.regtxid)
+        val lastSubTxHash = if (currentUser.subtx.isNotEmpty()) {
+            Sha256Hash.wrap(currentUser.subtx.last())
+        } else {
+            userRegTxId
+        }
 
-                contactObj.put("sender", me)
+        dapiClient.sendDapObject(contactObj, DAPI_ID, userRegTxId, lastSubTxHash, getPrivKey(),
+                object : DapiRequestCallback<String> {
+                    override fun onSuccess(data: JsonRPCResponse<String>) {
+                        currentUser.subtx.add(data.result!!)
+                        this@MainViewModel.currentUser.postValue(currentUser)
+                        cb.onSuccess(data)
+                    }
 
-                val userRegTxId = Sha256Hash.wrap(currentUser.regtxid)
-                val lastSubTxHash = if (currentUser.subtx.isNotEmpty()) {
-                    Sha256Hash.wrap(currentUser.subtx.last())
-                } else {
-                    userRegTxId
-                }
-                dapiClient.sendDapObject(contactObj, DAPI_ID, userRegTxId, lastSubTxHash, getPrivKey(),
-                        object : DapiRequestCallback<String> {
-                            override fun onSuccess(data: JsonRPCResponse<String>) {
-                                currentUser.subtx.add(data.result!!)
-                                this@MainViewModel.currentUser.postValue(currentUser)
-                                cb.onSuccess(data)
-                            }
-
-                            override fun onError(errorMessage: String) {
-                                cb.onError(errorMessage)
-                            }
-                        })
-            }
-
-            override fun onError(errorMessage: String) {
-                println(errorMessage)
-            }
-        })
+                    override fun onError(errorMessage: String) {
+                        cb.onError(errorMessage)
+                    }
+                })
     }
 
     fun loadContacts() {
         if (currentUser.value != null) {
-            //TODO: Callback hell
-            dapiClient.fetchDapObjects(DAPI_ID, "contact",
-                    object : DapiRequestCallback<List<DapiDemoContact>> {
+            dapiClient.fetchDapObjects(DAPI_ID, "contact", object : DapiRequestCallback<List<DapiDemoContact>> {
+                override fun onSuccess(data: JsonRPCResponse<List<DapiDemoContact>>) {
+                    val contacts = arrayListOf<DapiDemoContact>()
+                    contacts.addAll(data.result!!)
+                    val acceptedContacts = arrayListOf<String>()
+                    acceptedContacts.addAll(contacts.map { it.from })
+                    this@MainViewModel.contacts.postValue(contacts)
+
+                    dapiClient.fetchDapObjects(DAPI_ID, "contact", object : DapiRequestCallback<List<DapiDemoContact>> {
                         override fun onSuccess(data: JsonRPCResponse<List<DapiDemoContact>>) {
-                            val contactRequestsReceived = arrayListOf<DapiDemoContact>()
-                            data.result?.let { contactRequestsReceived.addAll(it) }
-                            dapiClient.fetchDapObjects(DAPI_ID, "contact",
-                                    object : DapiRequestCallback<List<DapiDemoContact>> {
+                            contacts.addAll(data.result!!)
+                            acceptedContacts.addAll(data.result!!.map { it.relation })
+
+                            dapiClient.fetchDapObjects(DAPI_ID, "contact", object : DapiRequestCallback<List<DapiDemoContact>> {
+                                override fun onSuccess(data: JsonRPCResponse<List<DapiDemoContact>>) {
+                                    val pendingContacts = data.result!!.filter {
+                                        it.relation !in acceptedContacts
+                                    }
+
+                                    this@MainViewModel.pendingContacts.postValue(pendingContacts)
+                                    dapiClient.fetchDapObjects(DAPI_ID, "contact", object : DapiRequestCallback<List<DapiDemoContact>> {
                                         override fun onSuccess(data: JsonRPCResponse<List<DapiDemoContact>>) {
-                                            val contactRequestsSent = arrayListOf<DapiDemoContact>()
-                                            data.result?.let { contactRequestsSent.addAll(it) }
-
-                                            val contactRequestsReceivedUserIds = contactRequestsReceived.map {
-                                                it.sender.id
+                                            val contactRequests = data.result!!.filter {
+                                                it.from !in acceptedContacts
                                             }
-                                            val contacts = contactRequestsSent.filter {
-                                                it.user in contactRequestsReceivedUserIds
-                                            }
-                                            val contactsIds = contacts.map { it.user }
-
-                                            this@MainViewModel.contacts.postValue(contacts)
-                                            this@MainViewModel.pendingContacts.postValue(contactRequestsSent.filter {
-                                                it.user !in contactsIds
-                                            })
-                                            this@MainViewModel.contactRequests.postValue(contactRequestsReceived.filter {
-                                                it.sender.id !in contactsIds
-                                            })
-
+                                            this@MainViewModel.contactRequests.postValue(contactRequests)
                                         }
 
                                         override fun onError(errorMessage: String) {
-                                            Log.d("Error", "Error $errorMessage")
 
                                         }
-                                    }, mapOf("blockchainUserId" to currentUser.value!!.regtxid))
+                                    }, mapOf("data.relation" to currentUser.value!!.uname, "data.action" to "request"))
+                                }
+
+                                override fun onError(errorMessage: String) {
+
+                                }
+                            }, mapOf("data.from" to currentUser.value!!.uname, "data.action" to "request"))
                         }
 
                         override fun onError(errorMessage: String) {
-                            Log.d("Error", "Error $errorMessage")
 
                         }
-                    }, mapOf("data.user" to currentUser.value!!.regtxid))
+                    }, mapOf("data.from" to currentUser.value!!.uname, "data.action" to "accept"))
+                }
+
+                override fun onError(errorMessage: String) {
+
+                }
+            }, mapOf("data.relation" to currentUser.value!!.uname, "data.action" to "accept"))
         }
     }
 }

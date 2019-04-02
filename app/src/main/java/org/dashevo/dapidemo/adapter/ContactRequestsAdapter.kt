@@ -8,8 +8,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import org.dashevo.dapidemo.R
 import org.dashevo.dapidemo.model.DapiDemoContact
+import org.dashevo.dapidemo.model.MainViewModel
 
-class ContactRequestsAdapter : RecyclerView.Adapter<ContactRequestsAdapter.ContactViewHolder>(), ContactsAdapter {
+class ContactRequestsAdapter(val viewModel: MainViewModel) : RecyclerView.Adapter<ContactRequestsAdapter.ContactViewHolder>(), ContactsAdapter {
 
     var itemClickListener: OnItemClickListener? = null
 
@@ -34,14 +35,17 @@ class ContactRequestsAdapter : RecyclerView.Adapter<ContactRequestsAdapter.Conta
     }
 
     inner class ContactViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
         val username: TextView by lazy { itemView.findViewById<TextView>(R.id.username) }
         val acceptBtn: AppCompatImageButton by lazy { itemView.findViewById<AppCompatImageButton>(R.id.acceptBtn) }
 
         fun bind(user: DapiDemoContact) {
-            username.text = user.sender.username
+            username.text = if (user.from != viewModel.currentUser.value?.uname) {
+                user.from
+            } else {
+                user.relation
+            }
             acceptBtn.setOnClickListener {
-                itemClickListener?.onAcceptClicked(user.sender.username)
+                itemClickListener?.onAcceptClicked(user.from)
             }
         }
 
